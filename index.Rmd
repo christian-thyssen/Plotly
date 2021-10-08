@@ -1,0 +1,169 @@
+---
+title: "Plotly Demo"
+author: "Christian Thyssen"
+date: "`r Sys.Date()`"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+library(tidyverse)
+library(plotly)
+```
+
+## Basic Charts - Scatter Plot 1
+
+```{r}
+mtcars %>%
+    mutate(cyl = as.factor(cyl)) %>%
+    plot_ly(
+        x = ~wt,
+        y = ~mpg,
+        type = "scatter",
+        mode = "markers",
+        color = ~cyl
+    ) %>%
+    layout(
+        title = "Motor Trend Car Road Tests",
+        legend = list(title = list(text = "cyl")))
+```
+
+## Basic Charts - Scatter Plot 2
+
+```{r}
+mtcars %>%
+    plot_ly(
+        x = ~wt,
+        y = ~mpg,
+        type = "scatter",
+        mode = "markers",
+        color = ~disp
+    ) %>%
+    layout(title = "Motor Trend Car Road Tests")
+```
+
+## 3D Charts - 3D Scatter Plot
+
+```{r}
+set.seed(1)
+temp <- rnorm(100, mean = 30, sd = 5)
+pressure <- rnorm(100)
+dtime <- 1:100
+
+plot_ly(
+    x = temp,
+    y = pressure,
+    z = dtime,
+    type = "scatter3d",
+    mode = "markers",
+    color = temp
+)
+```
+
+## Basic Charts - Line Chart 1
+
+```{r}
+plot_ly(x = time(airmiles), y = airmiles, type = "scatter", mode = "lines") %>%
+    layout(title = "Air Miles")
+```
+
+## Basic Charts - Line Chart 2
+
+```{r}
+stocks <- as.data.frame(EuStockMarkets) %>%
+    gather(index, price) %>%
+    mutate(time = rep(time(EuStockMarkets), 4))
+
+stocks %>%
+    plot_ly(
+        x = ~time,
+        y = ~price,
+        type = "scatter",
+        mode = "lines",
+        color = ~index
+    ) %>%
+    layout(title = "EU Stock Markets")
+```
+
+## Statistical Charts - Histogram
+
+```{r}
+mtcars %>%
+    plot_ly(x = ~mpg, type = "histogram") %>%
+    layout(title = "Motor Trend Car Road Tests")
+```
+
+## Statistical Charts - Box Plot
+
+```{r}
+iris %>%
+    plot_ly(y = ~Petal.Length, type = "box", color = ~Species) %>%
+    layout(title = "Iris")
+```
+
+## Scientific Charts - Heatmap
+
+```{r}
+set.seed(1)
+terrain1 <- matrix(rnorm(100 * 100), nrow = 100, ncol = 100)
+
+plot_ly(z = terrain1, type = "heatmap") %>%
+    layout(title = "Terrain 1")
+```
+
+## 3D Charts - 3D Surface Plot
+
+```{r}
+set.seed(1)
+terrain2 <- matrix(sort(rnorm(100 * 100)), nrow = 100, ncol = 100)
+
+plot_ly(z = terrain2, type = "surface") %>%
+    layout(title = "Terrain 2")
+```
+
+## Maps - Choropleth Map
+
+```{r}
+state_pop <- data.frame(State = state.abb, Pop = as.vector(state.x77[, 1]))
+state_pop <- state_pop %>%
+    mutate(hover = paste(State, "<br>Population: ", Pop, sep = ""))
+borders <- list(color = toRGB("red"))
+map_options <- list(
+    scope = "usa",
+    projection = list(type = "albers usa"),
+    showlakes = TRUE,
+    lakecolor = toRGB("white")
+)
+
+state_pop %>%
+    plot_ly(
+        z = ~Pop,
+        text = ~hover,
+        locations = ~State,
+        type = "choropleth",
+        locationmode = "USA-states",
+        color = ~Pop,
+        colors = "Blues",
+        marker = list(line = borders)
+    ) %>%
+    layout(
+        title = "US Population in 1975",
+        geo = map_options
+    )
+```
+
+## ggplotly
+
+```{r}
+set.seed(1)
+d <- diamonds[sample(nrow(diamonds), 1000), ]
+
+gg <- d %>%
+    ggplot(aes(x = carat, y = price)) +
+    geom_point(size = 2) +
+    geom_smooth(method = "loess", formula = y ~ x, aes(colour = cut, fill = cut)) +
+    facet_wrap(~ cut) +
+    labs(title = "Diamonds")
+ggplotly(gg)
+```
